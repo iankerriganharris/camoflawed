@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn
 } from 'typeorm'
+import { Image } from '../images/image.entity'
 import { Industry } from '../industries/industry.entity'
 import { Sector } from '../sectors/sector.entity'
 @Entity()
@@ -27,4 +28,7 @@ export class Company {
 
   @ManyToOne(type => Sector, sector => sector.companies)
   public sector: Sector
+
+  @OneToMany(type => Image, image => image.company)
+  public images: Image[]
 }

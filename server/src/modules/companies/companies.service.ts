@@ -13,9 +13,12 @@ export class CompaniesService {
   /* *
    * async retrieveAll
    * */
-  public async retrieveAll() {
+  public async retrieveAll(limit?: number) {
     try {
-      const companies = await this.companiesRepository.find()
+      const companies = await this.companiesRepository
+        .createQueryBuilder('company')
+        .limit(limit)
+        .getMany()
       return { companies, meta: { total: companies.length } }
     } catch {
       return

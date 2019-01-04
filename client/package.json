@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@types/jest": "^23.3.10",
+    "@types/humps": "^1.1.2",
+    "@types/jest": "^23.3.11",
+    "@types/lodash": "^4.14.119",
     "@types/node": "^10.12.18",
     "@types/react": "^16.7.18",
     "@types/react-dom": "^16.0.11",
@@ -12,12 +14,15 @@
     "@types/socket.io-client": "^1.4.32",
     "@types/styled-components": "^4.1.4",
     "axios": "^0.18.0",
+    "humps": "^2.0.1",
+    "lodash": "^4.17.11",
+    "normalizr": "^3.3.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-redux": "^6.0.0",
     "react-router-dom": "^4.3.1",
-    "redux-saga": "^0.16.2",
     "react-scripts": "2.1.2",
+    "redux-saga": "^0.16.2",
     "socket.io-client": "^2.2.0",
     "styled-components": "^4.1.2",
     "typescript": "^3.2.2"
@@ -28,6 +33,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:5000/",
   "eslintConfig": {
     "extends": "react-app"
   },

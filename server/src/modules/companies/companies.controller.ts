@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common'
+import { Controller, Get, Param, Query } from '@nestjs/common'
 import { CompaniesService } from './companies.service'
 
 @Controller('companies')
@@ -6,8 +6,8 @@ export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Get()
-  public index() {
-    return this.companiesService.retrieveAll()
+  public index(@Query('limit') limit?: number) {
+    return this.companiesService.retrieveAll(limit)
   }
 
   @Get(':id')
