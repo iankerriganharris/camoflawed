@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { databaseConfig } from './common'
 import { CompaniesModule } from './companies/companies.module'
+import { ImagesModule } from './images/images.module'
 import { IndustriesModule } from './industries/industries.module'
 import { SectorsModule } from './sectors/sectors.module'
 
@@ -15,7 +16,8 @@ import { SectorsModule } from './sectors/sectors.module'
     }),
     CompaniesModule,
     IndustriesModule,
-    SectorsModule
+    SectorsModule,
+    ImagesModule
   ]
 })
 export class AppModule {}

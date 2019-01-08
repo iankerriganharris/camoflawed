@@ -1,5 +1,6 @@
 import { all, call, fork, put, select, take } from 'redux-saga/effects'
 import * as actions from '../actions'
+import { getEntity, getIndustry } from '../reducers/selectors'
 import { api } from '../services'
 
 // entities
@@ -8,9 +9,10 @@ const { industries } = actions
 // resuable fetch Subroutine
 // entity :  industries
 // apiFn  : api.fetchIndustries | api.fetchRepo | ...
-function* fetchEntity(entity: any, apiFn: () => any) {
+function* fetchEntity(entity: any, apiFn: () => any, cursor?: number) {
   yield put(entity.request())
-  const { response, error } = yield call(apiFn)
+  const { response, error } = yield call(apiFn, cursor)
+  console.log('fetch response')
   console.log(response)
   if (response) {
     yield put(entity.success(response))
@@ -25,11 +27,11 @@ export const fetchIndustries = fetchEntity.bind(
   api.fetchIndustries
 )
 
-function* loadIndustries() {
-  // const repo = yield select(getRepo, fullName)
-  // if (!repo || requiredFields.some(key => !repo.hasOwnProperty(key)))
-  //   yield call(fetchRepo, fullName)
-  yield call(fetchIndustries)
+function* loadIndustries(cursor?: number, loadMore = false) {
+  const haveIndustries = yield select(getEntity, 'industries')
+  if (!haveIndustries || (cursor && cursor > 0 && loadMore)) {
+    yield call(fetchIndustries, cursor)
+  }
 }
 
 /******************************************************************************/
@@ -37,12 +39,24 @@ function* loadIndustries() {
 /******************************************************************************/
 
 function* watchLoadIndustriesPage() {
-  // while (true) {
-  //   yield fork(loadIndustries)
-  // }
-  yield fork(loadIndustries)
+  while (true) {
+    yield take(actions.LOAD_INDUSTRIES_PAGE)
+    yield fork(loadIndustries)
+  }
+}
+
+function* watchLoadMoreIndustries() {
+  while (true) {
+    console.log('I have been called')
+    const { cursor } = yield take(actions.LOAD_MORE_INDUSTRIES)
+    console.log(cursor)
+    yield fork(loadIndustries, cursor, true)
+  }
+  // console.log('I have been called')
+  // const { cursor } = yield take(actions.LOAD_MORE_INDUSTRIES)
+  // yield fork(loadIndustries, cursor, true)
 }
 
 export default function* root() {
-  yield all([fork(watchLoadIndustriesPage)])
+  yield all([fork(watchLoadIndustriesPage), fork(watchLoadMoreIndustries)])
 }

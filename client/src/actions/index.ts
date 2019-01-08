@@ -21,6 +21,7 @@ function createRequestTypes(base: string): any {
 export const INDUSTRIES = createRequestTypes('INDUSTRIES')
 
 export const LOAD_INDUSTRIES_PAGE = 'LOAD_INDUSTRIES_PAGE'
+export const LOAD_MORE_INDUSTRIES = 'LOAD_MORE_INDUSTRIES'
 
 function action(type: string, payload = {}) {
   return { type, ...payload }
@@ -33,3 +34,6 @@ export const industries = {
 }
 
 export const loadIndustriesPage = () => action(LOAD_INDUSTRIES_PAGE)
+
+export const loadMoreIndustries = (cursor: string) =>
+  action(LOAD_MORE_INDUSTRIES, { cursor })

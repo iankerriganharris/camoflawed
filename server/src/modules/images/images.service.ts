@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository } from 'typeorm'
+import { In, InsertResult, Repository } from 'typeorm'
+import { CreateImageDto } from './CreateImageDto'
 import { Image } from './image.entity'
 
 @Injectable()
@@ -29,6 +30,38 @@ export class ImagesService {
     try {
       const image = await this.imagesRepository.findOne(id)
       return { image }
+    } catch {
+      return
+    }
+  }
+
+  /**
+   * async createOne
+   */
+  public async createOne(createImageDto: CreateImageDto): Promise<Image> {
+    try {
+      const image = await this.imagesRepository.create(createImageDto)
+      return this.imagesRepository.save(image)
+    } catch {
+      return
+    }
+  }
+
+  /**
+   * async createMany
+   */
+  public async createMany(
+    createManyImagesDto: CreateImageDto[]
+  ): Promise<any[]> {
+    try {
+      const insertResult = await this.imagesRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Image)
+        .values(createManyImagesDto)
+        .returning('id')
+        .execute()
+      return insertResult.identifiers.map(identifier => identifier.id)
     } catch {
       return
     }

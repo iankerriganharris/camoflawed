@@ -1,8 +1,9 @@
 import React from 'react'
+import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
 import { AnyAction } from 'redux'
-import { loadIndustriesPage } from '../actions'
-import { GridList, Tile } from '../components'
+import { loadIndustriesPage, loadMoreIndustries } from '../actions'
+import { GridList, Loader, Tile } from '../components'
 
 interface IAppState {
   result: {
@@ -11,16 +12,37 @@ interface IAppState {
   entities: {
     industries: {}
   }
+  cursors: {
+    industries: {
+      nextCursor: number
+    }
+  }
+}
+
+interface IImage {
+  id: number
+  dateStored?: Date
+  originalUrl?: string
+  storageBucket?: string
+  storageKey?: string
+  storagePrefix?: string
+  storageProvider?: string
+  storageUrl?: string
 }
 
 interface IIndustry {
   id: number
   name: string
+  companies: number
+  images: number
+  primaryImage?: IImage
 }
 
 interface IIndustriesContainerProps {
   industries: IIndustry[]
   loadIndustriesPage: any
+  loadMoreIndustries: any
+  nextCursor?: number
 }
 
 class Industries extends React.Component<IIndustriesContainerProps, {}> {
@@ -32,14 +54,30 @@ class Industries extends React.Component<IIndustriesContainerProps, {}> {
     this.props.loadIndustriesPage()
   }
 
+  public loadMoreIndustries = () => {
+    if (this.props.nextCursor) {
+      // Simulate a delay for testing loader
+      setTimeout(
+        () => this.props.loadMoreIndustries(this.props.nextCursor),
+        2000
+      )
+    }
+  }
+
   public render() {
-    const { industries } = this.props
+    const { industries, nextCursor } = this.props
     console.log(this.props)
     return (
       <>
         <h4>Industries</h4>
         {industries.length ? (
-          <GridList items={industries} renderItem={renderIndustryTile} />
+          <InfiniteScroll
+            loadMore={this.loadMoreIndustries}
+            hasMore={nextCursor !== undefined && nextCursor > 0}
+            loader={<Loader key={0} />}
+          >
+            <GridList items={industries} renderItem={renderIndustryTile} />
+          </InfiniteScroll>
         ) : (
           console.log('no industries loaded')
         )}
@@ -48,16 +86,31 @@ class Industries extends React.Component<IIndustriesContainerProps, {}> {
   }
 }
 
+const sortByCompaniesCount = (a: IIndustry, b: IIndustry) =>
+  a.companies > b.companies ? -1 : a.companies < b.companies ? 1 : 0
+
 const renderIndustryTile = (industry: IIndustry) => (
-  <Tile key={industry.id}>{industry.name}</Tile>
+  <Tile
+    key={industry.id}
+    backgroundImage={
+      industry.primaryImage ? industry.primaryImage.originalUrl : undefined
+    }
+  >
+    {industry.name}
+  </Tile>
 )
 
 const mapStateToProps = (state: IAppState) => {
+  console.log(state)
   const industries =
     state.entities.industries && state.result.industries
       ? state.result.industries.map(i => state.entities.industries[i])
       : []
+  const cursorState = state.cursors.industries
+    ? { ...state.cursors.industries }
+    : {}
   return {
+    ...cursorState,
     industries
   }
 }
@@ -65,6 +118,7 @@ const mapStateToProps = (state: IAppState) => {
 export default connect(
   mapStateToProps,
   {
-    loadIndustriesPage
+    loadIndustriesPage,
+    loadMoreIndustries
   }
 )(Industries)

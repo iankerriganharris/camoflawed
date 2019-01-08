@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { Company } from '../companies/company.entity'
+import { Industry } from '../industries/industry.entity'
 
 @Entity()
 export class Image {
@@ -26,6 +27,9 @@ export class Image {
 
   @Column({ length: 2083, nullable: true })
   public storageUrl: string
+
+  @ManyToOne(type => Industry, industry => industry.images)
+  public industry: Industry
 
   @ManyToOne(type => Company, company => company.images)
   public company: Company

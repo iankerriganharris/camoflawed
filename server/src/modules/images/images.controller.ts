@@ -1,4 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { CreateImageDto } from './CreateImageDto'
 import { ImagesService } from './images.service'
 
 @Controller('images')
@@ -13,5 +14,10 @@ export class ImagesController {
   @Get(':id')
   public getOne(@Param('id') id: number) {
     return this.imagesService.retrieveById(id)
+  }
+
+  @Post()
+  public postOne(@Body() createImageDto: CreateImageDto) {
+    return this.imagesService.createOne(createImageDto)
   }
 }
