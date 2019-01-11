@@ -4,7 +4,9 @@ import * as ActionTypes from '../actions'
 import paginate from './paginate'
 
 function entities(state = {}, action: any) {
-  if (action.response && action.response.entities) {
+  console.log(state)
+  console.log(action.response)
+  if (action.response && action.response) {
     return merge({}, state, action.response.entities)
   }
   return state
@@ -45,9 +47,9 @@ function cursors(state = {}, action: any) {
 // })
 
 const rootReducer = combineReducers({
+  cursors,
   entities,
-  result,
-  cursors
+  result
 })
 
 export default rootReducer

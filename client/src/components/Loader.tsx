@@ -28,7 +28,7 @@ const shadows = keyframes`
   }
 `
 
-const round = keyframes`
+const rotate = keyframes`
   0% {
     -webkit-transform: rotate(0deg);
     transform: rotate(0deg);
@@ -52,8 +52,8 @@ const StyledLoader = styled.div`
     -webkit-transform: translateZ(0);
     -ms-transform: translateZ(0);
     transform: translateZ(0);
-    -webkit-animation: ${shadows} 1.7s infinite ease, ${round} 1.7s infinite ease;
-    animation: ${shadows} 1.7s infinite ease, ${round} 1.7s infinite ease;`
+    -webkit-animation: ${shadows} 1.7s infinite ease, ${rotate} 1.7s infinite ease;
+    animation: ${shadows} 1.7s infinite ease, ${rotate} 1.7s infinite ease;`
 
 export const Loader: React.FunctionComponent<{}> = () => (
   <StyledLoader>Loading...</StyledLoader>

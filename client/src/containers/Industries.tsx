@@ -1,8 +1,13 @@
 import React from 'react'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { AnyAction } from 'redux'
-import { loadIndustriesPage, loadMoreIndustries } from '../actions'
+import {
+  loadIndustriesPage,
+  loadIndustryPage,
+  loadMoreIndustries
+} from '../actions'
 import { GridList, Loader, Tile } from '../components'
 
 interface IAppState {
@@ -90,14 +95,15 @@ const sortByCompaniesCount = (a: IIndustry, b: IIndustry) =>
   a.companies > b.companies ? -1 : a.companies < b.companies ? 1 : 0
 
 const renderIndustryTile = (industry: IIndustry) => (
-  <Tile
-    key={industry.id}
-    backgroundImage={
-      industry.primaryImage ? industry.primaryImage.originalUrl : undefined
-    }
-  >
-    {industry.name}
-  </Tile>
+  <Link key={industry.id} to={`/industries/${industry.id}`}>
+    <Tile
+      backgroundImage={
+        industry.primaryImage ? industry.primaryImage.originalUrl : undefined
+      }
+    >
+      {industry.name}
+    </Tile>
+  </Link>
 )
 
 const mapStateToProps = (state: IAppState) => {

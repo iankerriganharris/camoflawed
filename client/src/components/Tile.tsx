@@ -12,6 +12,7 @@ const StyledTile = styled.div`
       ? `
         position: relative;
         z-index: 1;
+        height: 100%;
         
         &:before {
           content: "";
@@ -26,7 +27,7 @@ const StyledTile = styled.div`
           background-size: cover;
         }
         `
-      : 'background: rgba(0, 0, 0, 0.1);'}
+      : 'background: rgba(0, 0, 0, 0.1); height: 100%;'}
 `
 
 export const Tile: React.FunctionComponent<ITileProps> = ({

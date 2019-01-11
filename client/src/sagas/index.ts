@@ -9,9 +9,15 @@ const { industries } = actions
 // resuable fetch Subroutine
 // entity :  industries
 // apiFn  : api.fetchIndustries | api.fetchRepo | ...
-function* fetchEntity(entity: any, apiFn: () => any, cursor?: number) {
+function* fetchEntity(
+  entity: any,
+  apiFn: (param: any) => any,
+  cursor?: number,
+  id?: number
+) {
   yield put(entity.request())
-  const { response, error } = yield call(apiFn, cursor)
+  console.log(cursor)
+  const { response, error } = yield call(apiFn, cursor || id)
   console.log('fetch response')
   console.log(response)
   if (response) {
@@ -27,11 +33,21 @@ export const fetchIndustries = fetchEntity.bind(
   api.fetchIndustries
 )
 
+export const fetchIndustry = fetchEntity.bind(
+  null,
+  industries,
+  api.fetchIndustryById
+)
+
 function* loadIndustries(cursor?: number, loadMore = false) {
   const haveIndustries = yield select(getEntity, 'industries')
   if (!haveIndustries || (cursor && cursor > 0 && loadMore)) {
     yield call(fetchIndustries, cursor)
   }
+}
+
+function* loadIndustry(id: number) {
+  yield call(fetchIndustry, id)
 }
 
 /******************************************************************************/
@@ -57,6 +73,19 @@ function* watchLoadMoreIndustries() {
   // yield fork(loadIndustries, cursor, true)
 }
 
+function* watchLoadIndustryPage() {
+  while (true) {
+    console.log('Loading industry page')
+    const { id } = yield take(actions.LOAD_INDUSTRY_PAGE)
+    console.log(id)
+    yield fork(loadIndustry, id)
+  }
+}
+
 export default function* root() {
-  yield all([fork(watchLoadIndustriesPage), fork(watchLoadMoreIndustries)])
+  yield all([
+    fork(watchLoadIndustriesPage),
+    fork(watchLoadMoreIndustries),
+    fork(watchLoadIndustryPage)
+  ])
 }

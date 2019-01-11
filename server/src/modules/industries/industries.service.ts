@@ -96,8 +96,12 @@ export class IndustriesService {
    */
   public async retrieveById(id: number) {
     try {
-      const industry = await this.industriesRepository.findOne(id)
-      return { industry }
+      const industry = await this.industriesRepository
+        .createQueryBuilder('industry')
+        .where({ id })
+        .leftJoinAndSelect('industry.companies', 'companies')
+        .getOne()
+      return { ...industry }
     } catch {
       return
     }
@@ -112,9 +116,10 @@ export class IndustriesService {
         .createQueryBuilder('industry')
         .where({ id })
         .leftJoinAndSelect('industry.companies', 'companies')
+        .leftJoinAndSelect('industry.images', 'images')
         .orderBy('companies', 'ASC')
         .getOne()
-      return { industry }
+      return { ...industry }
     } catch {
       return
     }
