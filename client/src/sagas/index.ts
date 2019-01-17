@@ -1,10 +1,14 @@
 import { all, call, fork, put, select, take } from 'redux-saga/effects'
 import * as actions from '../actions'
-import { getEntity, getIndustry } from '../reducers/selectors'
+import {
+  getEntity,
+  selectCompanyById,
+  selectIndustryById
+} from '../reducers/selectors'
 import { api } from '../services'
 
 // entities
-const { industries } = actions
+const { industries, companies } = actions
 
 // resuable fetch Subroutine
 // entity :  industries
@@ -39,6 +43,12 @@ export const fetchIndustry = fetchEntity.bind(
   api.fetchIndustryById
 )
 
+export const fetchCompany = fetchEntity.bind(
+  null,
+  companies,
+  api.fetchCompanyById
+)
+
 function* loadIndustries(cursor?: number, loadMore = false) {
   const haveIndustries = yield select(getEntity, 'industries')
   if (!haveIndustries || (cursor && cursor > 0 && loadMore)) {
@@ -47,7 +57,17 @@ function* loadIndustries(cursor?: number, loadMore = false) {
 }
 
 function* loadIndustry(id: number) {
-  yield call(fetchIndustry, id)
+  const industry = yield select(selectIndustryById, id)
+  if (!industry || !industry.companies) {
+    yield call(fetchIndustry, id)
+  }
+}
+
+function* loadCompany(id: number) {
+  const company = yield select(selectCompanyById, id)
+  if (!company) {
+    yield call(fetchCompany, id)
+  }
 }
 
 /******************************************************************************/
@@ -63,22 +83,24 @@ function* watchLoadIndustriesPage() {
 
 function* watchLoadMoreIndustries() {
   while (true) {
-    console.log('I have been called')
     const { cursor } = yield take(actions.LOAD_MORE_INDUSTRIES)
     console.log(cursor)
     yield fork(loadIndustries, cursor, true)
   }
-  // console.log('I have been called')
-  // const { cursor } = yield take(actions.LOAD_MORE_INDUSTRIES)
-  // yield fork(loadIndustries, cursor, true)
 }
 
 function* watchLoadIndustryPage() {
   while (true) {
-    console.log('Loading industry page')
     const { id } = yield take(actions.LOAD_INDUSTRY_PAGE)
     console.log(id)
     yield fork(loadIndustry, id)
+  }
+}
+
+function* watchLoadCompanyPage() {
+  while (true) {
+    const { id } = yield take(actions.LOAD_COMPANY_PAGE)
+    yield fork(loadCompany, id)
   }
 }
 
@@ -86,6 +108,7 @@ export default function* root() {
   yield all([
     fork(watchLoadIndustriesPage),
     fork(watchLoadMoreIndustries),
-    fork(watchLoadIndustryPage)
+    fork(watchLoadIndustryPage),
+    fork(watchLoadCompanyPage)
   ])
 }

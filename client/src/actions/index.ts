@@ -20,11 +20,14 @@ function createRequestTypes(base: string): any {
 
 export const INDUSTRIES = createRequestTypes('INDUSTRIES')
 export const INDUSTRY = createRequestTypes('INDUSTRY')
+export const COMPANY = createRequestTypes('COMPANY')
 
 export const LOAD_INDUSTRIES_PAGE = 'LOAD_INDUSTRIES_PAGE'
 export const LOAD_MORE_INDUSTRIES = 'LOAD_MORE_INDUSTRIES'
 
 export const LOAD_INDUSTRY_PAGE = 'LOAD_INDUSTRY_PAGE'
+
+export const LOAD_COMPANY_PAGE = 'LOAD_COMPANY_PAGE'
 
 function action(type: string, payload = {}) {
   return { type, ...payload }
@@ -42,6 +45,12 @@ export const industry = {
   success: (response: any) => action(INDUSTRY[SUCCESS], { response })
 }
 
+export const companies = {
+  failure: (error: any) => action(COMPANY[FAILURE], { error }),
+  request: () => action(COMPANY[REQUEST]),
+  success: (response: any) => action(COMPANY[SUCCESS], { response })
+}
+
 export const loadIndustriesPage = () => action(LOAD_INDUSTRIES_PAGE)
 
 export const loadMoreIndustries = (cursor: string) =>
@@ -49,3 +58,5 @@ export const loadMoreIndustries = (cursor: string) =>
 
 export const loadIndustryPage = (id: number) =>
   action(LOAD_INDUSTRY_PAGE, { id })
+
+export const loadCompanyPage = (id: number) => action(LOAD_COMPANY_PAGE, { id })

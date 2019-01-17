@@ -80,7 +80,10 @@ export class IndustriesService {
 
       return {
         industries: [
-          ...industries.map((industry, i) => ({ ...industry, ...counts[i] }))
+          ...industries.map((industry, i) => ({
+            ...industry,
+            counts: { ...counts[i] }
+          }))
         ],
         meta: { total: totalCount },
         nextCursor:

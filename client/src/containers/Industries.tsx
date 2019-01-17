@@ -8,7 +8,7 @@ import {
   loadIndustryPage,
   loadMoreIndustries
 } from '../actions'
-import { GridList, Loader, Tile } from '../components'
+import { Loader, SquareGrid, TeaserTile, VariedGrid } from '../components'
 
 interface IAppState {
   result: {
@@ -62,10 +62,11 @@ class Industries extends React.Component<IIndustriesContainerProps, {}> {
   public loadMoreIndustries = () => {
     if (this.props.nextCursor) {
       // Simulate a delay for testing loader
-      setTimeout(
-        () => this.props.loadMoreIndustries(this.props.nextCursor),
-        2000
-      )
+      // setTimeout(
+      //   () => this.props.loadMoreIndustries(this.props.nextCursor),
+      //   2000
+      // )
+      this.props.loadMoreIndustries(this.props.nextCursor)
     }
   }
 
@@ -81,10 +82,10 @@ class Industries extends React.Component<IIndustriesContainerProps, {}> {
             hasMore={nextCursor !== undefined && nextCursor > 0}
             loader={<Loader key={0} />}
           >
-            <GridList items={industries} renderItem={renderIndustryTile} />
+            <SquareGrid>{industries.map(renderIndustryTile)}</SquareGrid>
           </InfiniteScroll>
         ) : (
-          console.log('no industries loaded')
+          console.log('no industr ies loaded')
         )}
       </>
     )
@@ -96,13 +97,13 @@ const sortByCompaniesCount = (a: IIndustry, b: IIndustry) =>
 
 const renderIndustryTile = (industry: IIndustry) => (
   <Link key={industry.id} to={`/industries/${industry.id}`}>
-    <Tile
+    <TeaserTile
       backgroundImage={
         industry.primaryImage ? industry.primaryImage.originalUrl : undefined
       }
     >
       {industry.name}
-    </Tile>
+    </TeaserTile>
   </Link>
 )
 

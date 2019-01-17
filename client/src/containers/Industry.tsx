@@ -3,53 +3,9 @@ import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import { loadIndustryPage } from '../actions'
-import { GridList, Tile } from '../components'
-
-interface IAppState {
-  result: {
-    industries: []
-  }
-  entities: {
-    industries: {
-      [id: number]: IIndustry
-    }
-    companies: {
-      [id: number]: any
-    }
-  }
-  cursors: {
-    industries: {
-      nextCursor: number
-    }
-  }
-}
-
-interface IImage {
-  id: number
-  dateStored?: Date
-  originalUrl?: string
-  storageBucket?: string
-  storageKey?: string
-  storagePrefix?: string
-  storageProvider?: string
-  storageUrl?: string
-}
-
-interface IIndustry {
-  id: number
-  name: string
-  companies: []
-  images: number
-  primaryImage?: IImage
-}
-
-interface ICompany {
-  id: number
-  name: string
-  ticker: string
-  website: string
-  primaryImage?: IImage
-}
+import { SquareGrid, TeaserTile } from '../components'
+import { selectIndustryByIdWithRelations } from '../reducers/selectors'
+import { IAppState, ICompany, IImage, IIndustry } from '../typings'
 
 interface IIndustryContainerProps extends RouteComponentProps<{ id: string }> {
   id: number
@@ -75,7 +31,7 @@ class Industry extends React.Component<IIndustryContainerProps, {}> {
       <>
         <h4>{name}</h4>
         {companies && companies.length ? (
-          <GridList items={companies} renderItem={renderCompanyTile} />
+          <SquareGrid>{companies.map(renderCompanyTile)}</SquareGrid>
         ) : (
           console.log('no companies for industry')
         )}
@@ -86,13 +42,13 @@ class Industry extends React.Component<IIndustryContainerProps, {}> {
 
 const renderCompanyTile = (company: ICompany) => (
   <Link key={company.id} to={`/companies/${company.id}`}>
-    <Tile
+    <TeaserTile
       backgroundImage={
         company.primaryImage ? company.primaryImage.originalUrl : undefined
       }
     >
       {company.name}
-    </Tile>
+    </TeaserTile>
   </Link>
 )
 
@@ -100,31 +56,10 @@ const mapStateToProps = (
   state: IAppState,
   ownProps: IIndustryContainerProps
 ) => {
-  console.log(state)
   const paramAsNum = Number(ownProps.match.params.id)
-  console.log(paramAsNum)
-  const industry =
-    state.entities.industries && paramAsNum
-      ? state.entities.industries[paramAsNum]
-      : undefined
-
-  const mappedCompanies =
-    industry &&
-    industry.companies &&
-    industry.companies.length &&
-    state.entities.companies
-      ? industry.companies.map(i => state.entities.companies[i])
-      : undefined
-
-  if (industry && mappedCompanies) {
-    const { companies, ...industryAsProp } = industry
-    return {
-      ...industryAsProp,
-      companies: mappedCompanies
-    }
-  } else {
-    return {}
-  }
+  const industry = selectIndustryByIdWithRelations(state, paramAsNum)
+  console.log(industry)
+  return industry ? { ...industry } : {}
 }
 
 export default connect(

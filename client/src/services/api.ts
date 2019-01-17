@@ -24,10 +24,13 @@ const industry = new schema.Entity('industries', {
   companies: [company]
 })
 
-const industryListing = { industries: [industry] }
+const industries = { industries: [industry] }
 
 export const fetchIndustries = (cursor?: number) =>
-  callApi(`/industries?cursor=${cursor ? cursor : ''}`, industryListing)
+  callApi(`/industries?cursor=${cursor ? cursor : ''}`, industries)
 
 export const fetchIndustryById = (id: number) =>
   callApi(`/industries/${id}`, industry)
+
+export const fetchCompanyById = (id: number) =>
+  callApi(`/companies/${id}`, company)
