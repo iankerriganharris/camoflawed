@@ -1,13 +1,18 @@
 package main
 
 import (
+	"bytes"
+	"encoding/csv"
+	"encoding/json"
 	"fmt"
-	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -33,8 +38,16 @@ func (Site *Site) Crawl() {
 	c := colly.NewCollector(
 		// AllowedDomains needs to be a hostname rather than absolute url
 		colly.AllowedDomains(Site.host),
-		colly.MaxDepth(1),
+		colly.MaxDepth(5),
+		// Turn on asynchronous requests
+		colly.Async(true),
 	)
+
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*" + Site.host + "*",
+		Parallelism: 2,
+		Delay:       2 * time.Second,
+	})
 
 	// On every a element which has img attribute, append img src to images array
 	c.OnHTML("img[src]", func(e *colly.HTMLElement) {
@@ -52,6 +65,7 @@ func (Site *Site) Crawl() {
 		// Visit link found on page
 		// Only those links are visited which are in AllowedDomains
 		c.Visit(e.Request.AbsoluteURL(link))
+		// c.Visit(link)
 	})
 
 	// Before making a request print "Visiting ..."
@@ -82,37 +96,120 @@ func (Site *Site) Crawl() {
 
 	// Start scraping images from Site.url
 	c.Visit(Site.url)
+
+	c.Wait()
 }
 
 // DownloadImg downloads all images from a site
-func (Site *Site) DownloadImg(images []string) {
+func (Site *Site) DownloadImg(imgs []string) {
 	defer downloaders.Done()
 
-	os.Mkdir(Site.folder, os.FileMode(0777))
+	type Image struct {
+		OriginalURL string `json:"originalUrl"`
+	}
 
-	Site.images = SliceUniq(images)
+	type Request struct {
+		Images []Image
+	}
 
-	for _, url := range Site.images {
-		fmt.Printf("\n%s\n", url)
-		if url[0:2] == "//" {
-			url = "http://" + url[2:len(url)]
-		} else if url[:4] != "http" && url[:4] != "https" {
-			url = "http://" + Site.host + url
-		}
-		fmt.Printf("\n%s\n", url)
-		parts := strings.Split(url, "/")
-		name := parts[len(parts)-1]
-		file, _ := os.Create(string(Site.folder + "/" + name))
-		resp, _ := http.Get(url)
-		if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
-			io.Copy(file, resp.Body)
-			file.Close()
-			resp.Body.Close()
-		} else {
-			fmt.Printf("Non-2xx HTTP Status for %s", url)
+	var uniqImgs []string
+	m := map[string]bool{}
+
+	for _, v := range imgs {
+		if !m[v] {
+			m[v] = true
+			uniqImgs = append(uniqImgs, v)
 		}
 	}
 
+	Site.images = uniqImgs
+
+	var tmpImages []Image
+
+	// images := make([]string, 0)
+
+	for _, u := range Site.images {
+		fmt.Printf("\n%s\n", u)
+		if strings.Contains(u, "base64") {
+			continue
+		} else if u[0:2] == "//" {
+			u = "http://" + u[2:len(u)]
+		} else if u[:4] != "http" && u[:4] != "https" {
+			u = "http://" + Site.host + u
+		}
+		fmt.Printf("\n%s\n", u)
+		u, err := url.ParseRequestURI(u)
+		if err != nil {
+			continue
+		}
+		// parts := strings.Split(url, "/")
+		// name := parts[len(parts)-1]
+		// file, _ := os.Create(string(Site.folder + "/" + name))
+		resp, err := http.Get(u.String())
+		if err != nil {
+			panic(err)
+		} else if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+			size, err := strconv.Atoi(resp.Header.Get("Content-Length"))
+			if err != nil {
+				continue
+				// panic(err)
+			} else {
+				downloadSize := int64(size)
+				if downloadSize > 5000 {
+					image := Image{OriginalURL: u.String()}
+					tmpImages = append(tmpImages, image)
+				}
+			}
+		} else {
+			fmt.Printf("Non-2xx HTTP Status for %s", u)
+		}
+
+		if len(tmpImages) > 0 {
+			file, err := os.OpenFile(Site.folder+"/results.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			checkError("couldn't open file", err)
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+
+			for _, value := range tmpImages {
+				err := writer.Write([]string{value.OriginalURL})
+				checkError("Cannot write to file", err)
+			}
+
+			req := Request{Images: tmpImages}
+			bytesRepresentation, err := json.Marshal(req)
+			if err != nil {
+				panic(err)
+			} else {
+				fmt.Printf(string(bytesRepresentation))
+				r, err := http.NewRequest("PATCH", "http://localhost:5000/companies/5", bytes.NewBuffer(bytesRepresentation))
+				r.Header.Set("Content-Type", "application/json")
+				if err != nil {
+					panic(err)
+				}
+				client := &http.Client{}
+				resp, err := client.Do(r)
+				if err != nil {
+					panic(err)
+				}
+				defer resp.Body.Close()
+				fmt.Printf(resp.Status)
+			}
+		}
+
+		// data := Request{Images: images}
+
+		// io.Copy(file, resp.Body)
+		// file.Close()
+		// resp.Body.Close()
+	}
+}
+
+func checkError(message string, err error) {
+	if err != nil {
+		log.Fatal(message, err)
+	}
 }
 
 func MakeCrawler(name string) *Site {
@@ -130,40 +227,8 @@ func MakeCrawler(name string) *Site {
 	return site
 }
 
-// func MakeCrawlers(urls []string) {
-// 	Site := make([]Sites, len(urls))
-
-// 	// Crawl concurrently
-// 	for i, name := range urls {
-// 		if name[:4] != "http" && name[:4] != "https" {
-// 			name = "http://" + name
-// 		}
-// 		u, err := url.Parse(name)
-// 		if err != nil {
-// 			fmt.Printf("could not fetch page - %s %v", name, err)
-// 		}
-// 		Site[i].folder = u.Host
-// 		Site[i].host = u.Host
-// 		Site[i].url = name
-// 		crawlers.Add(1)
-// 		go Site[i].Crawl()
-// 	}
-// }
-
-func SliceUniq(s []string) []string {
-	for i := 0; i < len(s); i++ {
-		for i2 := i + 1; i2 < len(s); i2++ {
-			if s[i] == s[i2] {
-				// delete
-				s = append(s[:i2], s[i2+1:]...)
-				i2--
-			}
-		}
-	}
-	return s
-}
-
 func main() {
+
 	var seedUrls []string
 
 	seedUrls = os.Args[1:]
