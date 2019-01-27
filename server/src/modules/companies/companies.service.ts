@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
+import { ImagesService } from '../images/images.service'
 import { Company } from './company.entity'
+import { UpdateCompanyDto } from './UpdateCompanyDto'
 
 @Injectable()
 export class CompaniesService {
   constructor(
     @InjectRepository(Company)
-    private readonly companiesRepository: Repository<Company>
+    private readonly companiesRepository: Repository<Company>,
+    @Inject(ImagesService)
+    private readonly imagesService: ImagesService
   ) {}
 
   /* *
@@ -35,8 +39,30 @@ export class CompaniesService {
         .where({ id })
         .leftJoinAndSelect('company.industry', 'industry')
         .leftJoinAndSelect('company.sector', 'sector')
+        .leftJoinAndSelect('company.images', 'images')
         .getOne()
-      return { company }
+      return { ...company }
+    } catch {
+      return
+    }
+  }
+
+  /**
+   * async updateOneById
+   */
+  public async updateOneById(id: number, updateCompanyDto: UpdateCompanyDto) {
+    try {
+      const { images } = updateCompanyDto
+      const imageIds =
+        images && images.length
+          ? await this.imagesService.createMany(images)
+          : []
+      await this.companiesRepository
+        .createQueryBuilder('companies')
+        .relation(Company, 'images')
+        .of(id)
+        .add(imageIds)
+      return await this.retrieveById(id)
     } catch {
       return
     }

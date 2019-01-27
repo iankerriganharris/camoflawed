@@ -1,5 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common'
 import { CompaniesService } from './companies.service'
+import { UpdateCompanyDto } from './UpdateCompanyDto'
 
 @Controller('companies')
 export class CompaniesController {
@@ -13,5 +14,13 @@ export class CompaniesController {
   @Get(':id')
   public getOne(@Param('id') id: number) {
     return this.companiesService.retrieveById(id)
+  }
+
+  @Patch(':id')
+  public patchOne(
+    @Param('id') id: number,
+    @Body() updateCompanyDto: UpdateCompanyDto
+  ) {
+    return this.companiesService.updateOneById(id, updateCompanyDto)
   }
 }
