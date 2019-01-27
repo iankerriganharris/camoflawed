@@ -1,5 +1,6 @@
 import { applyMiddleware, compose, createStore, Store } from 'redux'
 import createSagaMiddleware, { Task } from 'redux-saga'
+import DevTools from '../containers/DevTools'
 import rootReducer from '../reducers'
 
 interface ICustomStore extends Store {
@@ -11,7 +12,10 @@ export default function configureStore() {
 
   const store = createStore(
     rootReducer,
-    compose(applyMiddleware(sagaMiddleware))
+    compose(
+      applyMiddleware(sagaMiddleware),
+      DevTools.instrument()
+    )
   )
 
   return {

@@ -6,6 +6,7 @@ import {
   selectIndustryById
 } from '../reducers/selectors'
 import { api } from '../services'
+import { IEntity } from '../typings'
 
 // entities
 const { industries, companies } = actions
@@ -49,6 +50,9 @@ export const fetchCompany = fetchEntity.bind(
   api.fetchCompanyById
 )
 
+const cacheInvalid = (ent: IEntity) =>
+  !ent.timeFetched || ent.timeFetched < Date.now() - 30000 // 30 seconds
+
 function* loadIndustries(cursor?: number, loadMore = false) {
   const haveIndustries = yield select(getEntity, 'industries')
   if (!haveIndustries || (cursor && cursor > 0 && loadMore)) {
@@ -58,14 +62,14 @@ function* loadIndustries(cursor?: number, loadMore = false) {
 
 function* loadIndustry(id: number) {
   const industry = yield select(selectIndustryById, id)
-  if (!industry || !industry.companies) {
+  if (!industry || cacheInvalid(industry)) {
     yield call(fetchIndustry, id)
   }
 }
 
 function* loadCompany(id: number) {
   const company = yield select(selectCompanyById, id)
-  if (!company) {
+  if (!company || cacheInvalid(company)) {
     yield call(fetchCompany, id)
   }
 }

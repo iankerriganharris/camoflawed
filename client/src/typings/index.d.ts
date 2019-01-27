@@ -9,12 +9,19 @@ export interface IAppState {
     companies: {
       [id: number]: ICompany
     }
+    images: {
+      [id: number]: IImage
+    }
   }
   cursors: {
     industries: {
       nextCursor: number
     }
   }
+}
+
+export interface IEntity {
+  timeFetched: number
 }
 
 export interface IImage {
@@ -36,10 +43,11 @@ export interface IIndustry {
   primaryImage?: IImage
 }
 
-export interface ICompany {
+export interface ICompany extends IEntity {
   id: number
   name: string
   ticker: string
   website: string
   primaryImage?: IImage
+  images: number[]
 }

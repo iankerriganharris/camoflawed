@@ -26,7 +26,7 @@ const StyledTile = styled.article`
     width: 100%;
     height: 100%;
     text-align: center;
-    background: rgba(0, 0, 0, 0.25);
+    // background: rgba(0, 0, 0, 0.25);
     // background: #f7f7f7;
   }
 
@@ -56,7 +56,9 @@ export const TeaserTile: React.FunctionComponent<ITileProps> = ({
   <StyledTile>
     <figure>
       {!fade ? (
-        <img src={backgroundImage ? backgroundImage : notFoundImg} />
+        <div className="d-inline-block">
+          <img src={backgroundImage ? backgroundImage : notFoundImg} />
+        </div>
       ) : (
         <FadeIn height={182} once offset={500} duration={250}>
           {(onload: any) => (

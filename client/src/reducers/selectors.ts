@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { IAppState, ICompany, IIndustry } from '../typings'
+import { IAppState, ICompany, IImage, IIndustry } from '../typings'
 
 function getSafe(fn: CallableFunction, fallback?: any): any | undefined {
   try {
@@ -15,6 +15,9 @@ export const getIndustry = (state: any, industry: string) =>
 
 export const selectCompanies = (state: IAppState): ICompany[] | [] =>
   getSafe(() => state.entities.companies, [])
+
+export const selectImages = (state: IAppState): IImage[] | [] =>
+  getSafe(() => state.entities.images, [])
 
 export const selectCompanyById = (
   state: IAppState,
@@ -36,5 +39,18 @@ export const selectIndustryByIdWithRelations = createSelector(
       : {
           ...industry,
           companies: [...industry.companies.map(i => companies[i])]
+        }
+)
+
+export const selectCompanyByIdWithRelations = createSelector(
+  [selectCompanyById, selectImages],
+  (company, images) =>
+    !company
+      ? undefined
+      : !company.images || !images
+      ? { ...company }
+      : {
+          ...company,
+          images: [...company.images.map(i => images[i])]
         }
 )

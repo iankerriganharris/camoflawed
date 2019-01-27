@@ -95,12 +95,13 @@ class Industries extends React.Component<IIndustriesContainerProps, {}> {
 const sortByCompaniesCount = (a: IIndustry, b: IIndustry) =>
   a.companies > b.companies ? -1 : a.companies < b.companies ? 1 : 0
 
-const renderIndustryTile = (industry: IIndustry) => (
+const renderIndustryTile = (industry: IIndustry, index: number) => (
   <Link key={industry.id} to={`/industries/${industry.id}`}>
     <TeaserTile
       backgroundImage={
         industry.primaryImage ? industry.primaryImage.originalUrl : undefined
       }
+      fade={index > 20}
     >
       {industry.name}
     </TeaserTile>

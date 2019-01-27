@@ -11,14 +11,22 @@ async function callApi(endpoint: string, schema: Schema) {
     console.log(entityData)
     console.log(normalize(entityData, schema))
     return {
-      response: { ...normalize(entityData, schema), nextCursor, meta }
+      response: {
+        ...normalize({ ...entityData, timeFetched: Date.now() }, schema),
+        nextCursor,
+        meta
+      }
     }
   } catch {
     return
   }
 }
 
-const company = new schema.Entity('companies')
+const image = new schema.Entity('images')
+
+const company = new schema.Entity('companies', {
+  images: [image]
+})
 
 const industry = new schema.Entity('industries', {
   companies: [company]

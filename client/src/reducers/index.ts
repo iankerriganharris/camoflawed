@@ -6,7 +6,7 @@ import paginate from './paginate'
 function entities(state = {}, action: any) {
   console.log(state)
   console.log(action.response)
-  if (action.response && action.response) {
+  if (action.response && action.response.entities) {
     return merge({}, state, action.response.entities)
   }
   return state
