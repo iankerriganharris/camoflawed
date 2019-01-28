@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import { loadCompanyPage } from '../actions'
-import { SquareGrid, TeaserTile } from '../components'
+import { ImageDetail, Modal, SquareGrid, TeaserTile } from '../components'
 import {
   selectCompanyById,
   selectCompanyByIdWithRelations
@@ -18,33 +18,64 @@ interface ICompanyContainerProps extends RouteComponentProps<{ id: string }> {
   images: IImage[]
 }
 
-class Company extends React.Component<ICompanyContainerProps, {}> {
+interface ICompanyContainerState {
+  modalOpen?: boolean
+  selectedImage?: IImage
+}
+
+class Company extends React.Component<
+  ICompanyContainerProps,
+  ICompanyContainerState
+> {
+  public state: ICompanyContainerState = {
+    modalOpen: false
+  }
+
   public componentDidMount = () => {
     this.props.loadCompanyPage(this.props.match.params.id)
   }
 
   public render() {
-    const { name, ticker, website, images } = this.props
+    const { id, name, ticker, website, images } = this.props
+    const { modalOpen, selectedImage } = this.state
+    console.log(modalOpen)
     return (
       <>
         <h4>{name}</h4>
         <h3>{ticker}</h3>
         <h2>{website}</h2>
-        {images && images.length ? (
-          <SquareGrid>{images.map(renderImageTile)}</SquareGrid>
-        ) : (
-          console.log('no images for company')
-        )}
+        <div>
+          <Modal closeFunction={this.toggleModal} open={modalOpen}>
+            <p onClick={this.toggleModal}>X</p>
+            {selectedImage && selectedImage.originalUrl ? (
+              <ImageDetail src={selectedImage.originalUrl} />
+            ) : null}
+          </Modal>
+          <section className={modalOpen ? 'blurred' : ''}>
+            {images && images.length ? (
+              <SquareGrid>{images.map(this.renderImageTile)}</SquareGrid>
+            ) : null}
+          </section>
+        </div>
       </>
     )
   }
-}
 
-const renderImageTile = (image: IImage) => (
-  <TeaserTile
-    backgroundImage={image.originalUrl ? image.originalUrl : undefined}
-  />
-)
+  private renderImageTile = (image: IImage) => (
+    <div
+      onClick={() => this.setState({ modalOpen: true, selectedImage: image })}
+    >
+      <TeaserTile
+        backgroundImage={image.originalUrl ? image.originalUrl : undefined}
+      />
+    </div>
+  )
+
+  private selectImage = (image: IImage) =>
+    this.setState({ selectedImage: image })
+  private toggleModal = () =>
+    this.setState({ modalOpen: !this.state.modalOpen })
+}
 
 const mapStateToProps = (
   state: IAppState,
