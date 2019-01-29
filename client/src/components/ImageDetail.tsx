@@ -5,15 +5,20 @@ interface IImageDetailProps {
   src: string
 }
 
-const Container = styled.div``
+const Container = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+`
 
 const StyledImg = styled.img`
-  width: 100%;
+  max-width: 90%;
   height: auto;
 `
 
 export const ImageDetail = ({ src }: IImageDetailProps) => (
-  <div>
+  <Container>
     <StyledImg src={src} />
-  </div>
+  </Container>
 )

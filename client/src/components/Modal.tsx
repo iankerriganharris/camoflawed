@@ -44,6 +44,11 @@ const ModalContent = styled.div`
   height: 100%;
   overflow: auto;
 `
+const CloseIcon = styled.div`
+  position: absolute;
+  top 5;
+  left 5;
+`
 
 const ModalOverlay = styled.div`
   display: ${({ open }: IModalProps) => (open ? 'block' : 'none')};
@@ -53,13 +58,17 @@ const ModalOverlay = styled.div`
   width: 100%;
   height: 100%;
   z-index: 99;
+  background: rgba(0, 0, 0, 0.25);
 `
 
 export const Modal = ({ open, children, closeFunction }: IModalProps) => (
   <>
     <ModalOverlay onClick={closeFunction} open={open} />
     <StyledModal open={open}>
-      <ModalContent>{children}</ModalContent>
+      <ModalContent>
+        <CloseIcon onClick={closeFunction}>x</CloseIcon>
+        {children}
+      </ModalContent>
     </StyledModal>
   </>
 )

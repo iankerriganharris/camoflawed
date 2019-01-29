@@ -46,7 +46,6 @@ class Company extends React.Component<
         <h2>{website}</h2>
         <div>
           <Modal closeFunction={this.toggleModal} open={modalOpen}>
-            <p onClick={this.toggleModal}>X</p>
             {selectedImage && selectedImage.originalUrl ? (
               <ImageDetail src={selectedImage.originalUrl} />
             ) : null}
