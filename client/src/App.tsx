@@ -10,10 +10,6 @@ store.runSaga(rootSaga)
 
 export default class App extends React.Component {
   public render() {
-    return (
-      <div className="App">
-        <Root store={store} />
-      </div>
-    )
+    return <Root store={store} />
   }
 }

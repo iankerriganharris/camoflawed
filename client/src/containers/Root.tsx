@@ -15,12 +15,10 @@ export default class Root extends Component<IRootProps, {}> {
 
     return (
       <Provider store={store}>
-        <main>
-          <Router>
-            <Routes />
-          </Router>
-          <DevTools />
-        </main>
+        <Router>
+          <Routes />
+        </Router>
+        <DevTools />
       </Provider>
     )
   }

@@ -14,7 +14,7 @@ const Container = styled.div`
 
 const StyledImg = styled.img`
   max-width: 90%;
-  height: auto;
+  max-height: 90%;
 `
 
 export const ImageDetail = ({ src }: IImageDetailProps) => (
